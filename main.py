@@ -1,25 +1,39 @@
+# -------------------------------------------------------------
+# From "word doc pseudocode"
+#
+# Output:
+# • A feasible route that:
+#       - starts at s
+#       - visits all pickups and deliveries
+#       - returns to e if required
+#       - respects precedence constraints
+#       - respects pairing constraints
+#       - satisfies all time windows
+#   OR
+# • A fail message: "instance infeasible"
+# -------------------------------------------------------------
+
 from solver import PDP_GREEDY_INSERT_2OPT
+from instance_input import get_instance, get_instance_tight_tw, get_instance_with_pairing
+
 
 def main():
-    # Example placeholder instance structure
-    # You will replace this with real data
-    instance = {
-        "s": 0,
-        "e": None,
-        "R": [],
-        "pickup": {},
-        "delivery": {},
-        "V": [],
-        "c": [],
-        "T": [],
-        "open": {},
-        "close": {},
-        "service": {},
-        "paired_sets": []
-    }
+    # Load instance from separate file
+    instance = get_instance()
+    instanceTimeWindow = get_instance_tight_tw()
+    instancePairing = get_instance_with_pairing()
 
+
+    # Run the solver
     result = PDP_GREEDY_INSERT_2OPT(instance)
+    resultTimeWindow = PDP_GREEDY_INSERT_2OPT(instanceTimeWindow)
+    # resultPairing = PDP_GREEDY_INSERT_2OPT(instancePairing)
+
+    # Print the resulting route or infeasibility message
     print("Result:", result)
+    print("Result:", resultTimeWindow)
+    # print("Result:", resultPairing)
+
 
 if __name__ == "__main__":
     main()
