@@ -14,7 +14,7 @@
 # -------------------------------------------------------------
 
 from solver import PDP_GREEDY_INSERT_2OPT
-from instance_input import get_instance, get_instance_tight_tw, get_instance_with_pairing, get_instance_pairing_easy
+from instance_input import get_instance, get_instance_tight_tw, get_instance_with_pairing, get_instance_pairing_hard
 
 
 def main():
@@ -22,20 +22,20 @@ def main():
     instance = get_instance()
     instanceTimeWindow = get_instance_tight_tw()
     instancePairing = get_instance_with_pairing()
-    instanceEasyPairing = get_instance_pairing_easy()
+    instanceHardPairing = get_instance_pairing_hard()
 
 
     # Run the solver
     result = PDP_GREEDY_INSERT_2OPT(instance)
     resultTimeWindow = PDP_GREEDY_INSERT_2OPT(instanceTimeWindow)
     resultPairing = PDP_GREEDY_INSERT_2OPT(instancePairing)
-    resultEasyPairing = PDP_GREEDY_INSERT_2OPT(instanceEasyPairing)
+    resultHardPairing = PDP_GREEDY_INSERT_2OPT(instanceHardPairing)
 
     # Print the resulting route or infeasibility message
     print("Result:", result)
-    print("ResultTW:", resultTimeWindow)
-    print("ResultP:", resultPairing)
-    print("ResultEP:", resultEasyPairing)
+    print("Result Time Windows:", resultTimeWindow)
+    print("Result Pairing:", resultPairing)
+    print("Result Tight TW, Hard Pairing:", resultHardPairing)
 
 
 if __name__ == "__main__":

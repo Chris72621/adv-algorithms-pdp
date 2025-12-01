@@ -174,48 +174,56 @@ def get_instance_with_pairing():
 # -------------------------------------------------------------
 # EASY PAIRING INSTANCE: Greedy should find a solution
 # -------------------------------------------------------------
-def get_instance_pairing_easy():
+def get_instance_pairing_hard():
     """
     Very small instance where requests 1 and 2 are paired
     and the greedy insertion should succeed.
     """
 
+    # Harder pairing instance:
+    # - Three requests, paired set {1,2} requires pickups 1 and 2 before either delivery
+    # - Tight time windows force pickups to be early and deliveries later
+    # - Non-trivial distance/time matrix
     instance = {
         "s": 0,
         "e": None,
 
-        "R": {1, 2},
+        "R": {1, 2, 3},
 
-        # pickups and deliveries (contiguous ordering to keep matrices simple)
-        "pickup":   {1: 1, 2: 2},
-        "delivery": {1: 3, 2: 4},
+        "pickup":   {1: 1, 2: 2, 3: 3},
+        "delivery": {1: 4, 2: 5, 3: 6},
 
-        "V": [0, 1, 2, 3, 4],
+        # Node ordering matches rows/cols of c/T
+        "V": [0, 1, 2, 3, 4, 5, 6],
 
-        # Simple symmetric distance/time (5x5)
+        # Distance matrix (7x7)
         "c": [
-            [0, 1, 2, 3, 4],
-            [1, 0, 1, 2, 3],
-            [2, 1, 0, 2, 2],
-            [3, 2, 2, 0, 1],
-            [4, 3, 2, 1, 0],
+            [0, 2, 3, 4, 8, 9, 7],
+            [2, 0, 1, 3, 6, 7, 5],
+            [3, 1, 0, 2, 7, 8, 6],
+            [4, 3, 2, 0, 5, 6, 4],
+            [8, 6, 7, 5, 0, 1, 3],
+            [9, 7, 8, 6, 1, 0, 2],
+            [7, 5, 6, 4, 3, 2, 0],
         ],
 
         "T": [
-            [0, 1, 2, 3, 4],
-            [1, 0, 1, 2, 3],
-            [2, 1, 0, 2, 2],
-            [3, 2, 2, 0, 1],
-            [4, 3, 2, 1, 0],
+            [0, 2, 3, 4, 8, 9, 7],
+            [2, 0, 1, 3, 6, 7, 5],
+            [3, 1, 0, 2, 7, 8, 6],
+            [4, 3, 2, 0, 5, 6, 4],
+            [8, 6, 7, 5, 0, 1, 3],
+            [9, 7, 8, 6, 1, 0, 2],
+            [7, 5, 6, 4, 3, 2, 0],
         ],
 
-        "service": {i: 0 for i in range(5)},
+        "service": {i: 0 for i in [0,1,2,3,4,5,6]},
 
-        # Generous time windows so timing isn't the limiting factor
-        "open":  {i: 0 for i in range(5)},
-        "close": {i: 100 for i in range(5)},
+        # Time windows: pickups must occur early; deliveries open later
+        "open":  {0: 0, 1: 0, 2: 0, 3: 0, 4: 8, 5: 8, 6: 10},
+        "close": {0: 100, 1: 5, 2: 5, 3: 6, 4: 30, 5: 30, 6: 40},
 
-        # Paired requirement: pickups 1 and 2 must both occur before either delivery
+        # Paired requirement: pickups 1 and 2 must both occur before either delivery 4 or 5
         "paired_sets": [{1, 2}]
     }
 
