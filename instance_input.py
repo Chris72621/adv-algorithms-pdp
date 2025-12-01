@@ -164,7 +164,7 @@ def get_instance_with_pairing():
 
         # Paired requirement: pickups 1 and 2 must happen before either delivery 6 or 7
         "paired_sets": [
-            {3, 2}
+            {1, 2}
         ]
     }
 
