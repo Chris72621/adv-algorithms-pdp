@@ -164,8 +164,59 @@ def get_instance_with_pairing():
 
         # Paired requirement: pickups 1 and 2 must happen before either delivery 6 or 7
         "paired_sets": [
-            {1, 2}
+            {3, 2}
         ]
+    }
+
+    return instance
+
+
+# -------------------------------------------------------------
+# EASY PAIRING INSTANCE: Greedy should find a solution
+# -------------------------------------------------------------
+def get_instance_pairing_easy():
+    """
+    Very small instance where requests 1 and 2 are paired
+    and the greedy insertion should succeed.
+    """
+
+    instance = {
+        "s": 0,
+        "e": None,
+
+        "R": {1, 2},
+
+        # pickups and deliveries (contiguous ordering to keep matrices simple)
+        "pickup":   {1: 1, 2: 2},
+        "delivery": {1: 3, 2: 4},
+
+        "V": [0, 1, 2, 3, 4],
+
+        # Simple symmetric distance/time (5x5)
+        "c": [
+            [0, 1, 2, 3, 4],
+            [1, 0, 1, 2, 3],
+            [2, 1, 0, 2, 2],
+            [3, 2, 2, 0, 1],
+            [4, 3, 2, 1, 0],
+        ],
+
+        "T": [
+            [0, 1, 2, 3, 4],
+            [1, 0, 1, 2, 3],
+            [2, 1, 0, 2, 2],
+            [3, 2, 2, 0, 1],
+            [4, 3, 2, 1, 0],
+        ],
+
+        "service": {i: 0 for i in range(5)},
+
+        # Generous time windows so timing isn't the limiting factor
+        "open":  {i: 0 for i in range(5)},
+        "close": {i: 100 for i in range(5)},
+
+        # Paired requirement: pickups 1 and 2 must both occur before either delivery
+        "paired_sets": [{1, 2}]
     }
 
     return instance

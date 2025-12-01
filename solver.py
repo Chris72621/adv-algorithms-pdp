@@ -143,8 +143,8 @@ def _construction_phase(route, unserved_requests, instance):
                     # Check feasibility
                     if feasible(trial_route, instance):
 
-                        new_cost = total_distance(trial_route, instance["c"])
-                        old_cost = total_distance(route, instance["c"])
+                        new_cost = total_distance(trial_route, instance["c"], instance.get("V"))
+                        old_cost = total_distance(route, instance["c"], instance.get("V"))
                         delta = new_cost - old_cost
 
                         if delta < best_delta_for_r:
@@ -209,7 +209,7 @@ def _two_opt_phase(route, instance):
 
     while improved:
         improved = False
-        current_cost = total_distance(route, c)
+        current_cost = total_distance(route, c, instance.get("V"))
 
         # Try all edge pairs (i, i+1) and (j, j+1)
         for i in range(len(route) - 3):
@@ -222,7 +222,7 @@ def _two_opt_phase(route, instance):
 
                 # Only keep moves that remain feasible
                 if feasible(trial_route, instance):
-                    new_cost = total_distance(trial_route, c)
+                    new_cost = total_distance(trial_route, c, instance.get("V"))
 
                     if new_cost < current_cost:
                         route = trial_route

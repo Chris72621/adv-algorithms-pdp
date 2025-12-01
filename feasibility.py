@@ -52,10 +52,16 @@ def feasible(route, instance):
     picked = set()
     time = 0
 
+    # Build mapping from node id -> matrix index for distance/time matrices
+    # Some instances use non-contiguous node IDs (e.g. V = [0,1,2,5,6,7,8])
+    # while T/c are dense matrices indexed by position in V. Create a map
+    # so we can safely index into those matrices.
+    node_index = {v: idx for idx, v in enumerate(instance.get("V", []))}
+
     for k in range(len(route)):
         i = route[k]
 
-        time = _update_time(k, route, time, instance)
+        time = _update_time(k, route, time, instance, node_index)
 
         if not _check_time_window(i, time, instance):
             return False
@@ -77,7 +83,7 @@ def feasible(route, instance):
 # Helper 1: Time propagation through the route
 # ============================================================
 
-def _update_time(k, route, current_time, instance):
+def _update_time(k, route, current_time, instance, node_index):
     """
     Updates global time as we move along the route.
     Implements:
@@ -99,7 +105,14 @@ def _update_time(k, route, current_time, instance):
     #   - service time at previous node
     #   - travel time from prev to current
     prev = route[k - 1]
-    updated_time = current_time + service[prev] + T[prev][i]
+
+    # Map node ids to matrix indices for service/T lookups when necessary
+    # service may be a dict keyed by node id; keep using that. T is a
+    # dense matrix indexed by position in instance["V"], so convert.
+    prev_idx = node_index.get(prev, prev)
+    i_idx = node_index.get(i, i)
+
+    updated_time = current_time + service[prev] + T[prev_idx][i_idx]
 
     # Wait for time window to open if early
     updated_time = max(updated_time, open_time[i])
