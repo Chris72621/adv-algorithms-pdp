@@ -18,18 +18,18 @@ def PDP_GREEDY_INSERT_2OPT(instance):
     route, unserved_requests = _initialize_route(instance)
 
     # ---- Phase 2: Greedy Construction ----
-    route = _construction_phase(route, unserved_requests, instance)
-
+    route_after_greedy = _construction_phase(route, unserved_requests, instance)
+ 
     # ---- If infeasible, stop ----
-    if isinstance(route, str):
-        return route  # error message
+    if isinstance(route_after_greedy, str):
+        return None, route_after_greedy
 
     # ---- Phase 3: 2-Opt Improvement ----
-    route = _two_opt_phase(route, instance)
+    route_final = _two_opt_phase(route_after_greedy, instance)
+
 
     # Return final improved route
-    return route
-
+    return route_after_greedy, route_final
 
 
 # =====================================================================
@@ -63,7 +63,6 @@ def _initialize_route(instance):
     unserved_requests = set(R)
 
     return route, unserved_requests
-
 
 
 # =====================================================================
