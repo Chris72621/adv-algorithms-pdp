@@ -63,11 +63,9 @@ def _initialize_route(instance):
     # Requests not yet inserted
     unserved_requests = set(R)
 
-    # -------- TRACE OUTPUT --------
     print("\n=== TRACE: Initialization ===")
     print("Initial route:", route)
     print("Unserved requests:", unserved_requests)
-    # ------------------------------
 
     return route, unserved_requests
 
@@ -122,102 +120,98 @@ def _construction_phase(route, unserved_requests, instance):
     pickup = instance["pickup"]
     delivery = instance["delivery"]
 
-    # Track requests whose pickup still needs insertion, and those whose
-    # pickup was inserted but delivery still pending.
     remaining_pickups = set(unserved_requests)
     pending_deliveries = set()
 
-    # Continue until all pickups inserted and all deliveries placed
     while len(remaining_pickups) > 0 or len(pending_deliveries) > 0:
 
+        # --- SLIDE PRINTS ---
         print("\n--- Greedy Iteration ---")
         print("Current route:", route)
         print("Unserved requests:", remaining_pickups | pending_deliveries)
-
+        # ---------------------
 
         best_route_global = None
         best_delta_global = float("inf")
-        best_action = None  # tuple (type, r)
+        best_action = None
 
         base_cost = total_distance(route, instance["c"], instance.get("V"))
 
-        # 1) Consider inserting pickups (either with delivery or pickup-only)
+        # ------------------------------------------------------------
+        # TEST PICKUPS
+        # ------------------------------------------------------------
         for r in list(remaining_pickups):
             p_node = pickup[r]
             d_node = delivery[r]
 
-            # Try full insertion (pickup + delivery)
+            # Full insertion
             for posP in range(len(route)):
                 for posD in range(posP + 1, len(route) + 1):
-                    trial_route = route.copy()
-                    trial_route.insert(posP + 1, p_node)
-                    trial_route.insert(posD + 1, d_node)
+                    trial = route.copy()
+                    trial.insert(posP + 1, p_node)
+                    trial.insert(posD + 1, d_node)
 
-                    if feasible(trial_route, instance):
-                        new_cost = total_distance(trial_route, instance["c"], instance.get("V"))
-                        delta = new_cost - base_cost
+                    if feasible(trial, instance):
+                        delta = total_distance(trial, instance["c"], instance.get("V")) - base_cost
                         if delta < best_delta_global:
                             best_delta_global = delta
-                            best_route_global = trial_route
+                            best_route_global = trial
                             best_action = ("full", r)
 
-            # Try pickup-only insertion (defer delivery)
+            # Pickup-only
             for posP in range(len(route)):
-                trial_route = route.copy()
-                trial_route.insert(posP + 1, p_node)
+                trial = route.copy()
+                trial.insert(posP + 1, p_node)
 
-                if feasible(trial_route, instance):
-                    new_cost = total_distance(trial_route, instance["c"], instance.get("V"))
-                    delta = new_cost - base_cost
+                if feasible(trial, instance):
+                    delta = total_distance(trial, instance["c"], instance.get("V")) - base_cost
                     if delta < best_delta_global:
                         best_delta_global = delta
-                        best_route_global = trial_route
+                        best_route_global = trial
                         best_action = ("pickup_only", r)
 
-        # 2) Consider inserting pending deliveries (for requests whose pickup is already in route)
+        # ------------------------------------------------------------
+        # TEST DELIVERIES
+        # ------------------------------------------------------------
         for r in list(pending_deliveries):
             d_node = delivery[r]
 
             for posD in range(len(route) + 1):
-                trial_route = route.copy()
-                # Insert delivery AFTER posD (posD may be len(route) to insert at end)
-                trial_route.insert(posD + 1, d_node)
+                trial = route.copy()
+                trial.insert(posD + 1, d_node)
 
-                if feasible(trial_route, instance):
-                    new_cost = total_distance(trial_route, instance["c"], instance.get("V"))
-                    delta = new_cost - base_cost
+                if feasible(trial, instance):
+                    delta = total_distance(trial, instance["c"], instance.get("V")) - base_cost
                     if delta < best_delta_global:
                         best_delta_global = delta
-                        best_route_global = trial_route
+                        best_route_global = trial
                         best_action = ("delivery_only", r)
 
-        # If no feasible move anywhere → infeasible instance
+        # No feasible insertion anywhere → infeasible
         if best_route_global is None:
+            print("No feasible insertion found → instance infeasible")
             return "instance infeasible (no feasible insertion found)"
 
-        # Accept global best insertion and update sets
+        # --- SLIDE PRINT ---
+        print(f"Chosen insertion: {best_action}  |  Δcost = {best_delta_global:.3f}")
+        # -------------------
+
+        # Accept chosen insertion
         route = best_route_global
         action_type, action_r = best_action
 
         if action_type == "full":
-            # pickup+delivery inserted; remove from remaining_pickups
-            if action_r in remaining_pickups:
-                remaining_pickups.remove(action_r)
-            # ensure it's not pending
+            remaining_pickups.discard(action_r)
             pending_deliveries.discard(action_r)
 
         elif action_type == "pickup_only":
-            # pickup inserted now delivery pending
             remaining_pickups.remove(action_r)
             pending_deliveries.add(action_r)
 
         elif action_type == "delivery_only":
-            # delivery inserted; remove from pending
             pending_deliveries.remove(action_r)
 
     return route
-
-
 
 # =====================================================================
 # PHASE 3: IMPROVEMENT (2-OPT LOCAL SEARCH)
@@ -255,37 +249,31 @@ def _two_opt_phase(route, instance):
     print("\n=== TRACE: Starting 2-Opt Improvement Phase ===")
     print("Initial route:", route)
 
-
     c = instance["c"]
-
     improved = True
 
     while improved:
         improved = False
         current_cost = total_distance(route, c, instance.get("V"))
 
-        # Try all edge pairs (i, i+1) and (j, j+1)
         for i in range(len(route) - 3):
             for j in range(i + 2, len(route) - 1):
 
-                trial_route = route.copy()
+                trial = route.copy()
+                reverse_segment(trial, i + 1, j)
 
-                # Reverse middle segment (i+1 ... j)
-                reverse_segment(trial_route, i + 1, j)
-
-                # Only keep moves that remain feasible
-                if feasible(trial_route, instance):
-                    new_cost = total_distance(trial_route, c, instance.get("V"))
+                if feasible(trial, instance):
+                    new_cost = total_distance(trial, c, instance.get("V"))
 
                     if new_cost < current_cost:
-                        route = trial_route
+                        print(f"Improvement accepted: reverse {i+1}..{j}  → Δ = {current_cost - new_cost:.3f}")
+                        route = trial
                         improved = True
                         break
-
             if improved:
                 break
-    
-    print("\n=== TRACE: 2-Opt Complete ===")
+
+    print("=== TRACE: 2-Opt Complete ===")
     print("Final improved route:", route)
 
     return route

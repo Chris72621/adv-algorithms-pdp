@@ -35,55 +35,66 @@
 
 def feasible(route, instance):
     """
-    Check feasibility of a route under:
-    - time windows
-    - precedence (pickup-before-delivery)
-    - paired-pickup constraints
+    FEASIBLE() — Time Windows, Precedence & Pairing
+    Trace matches slide: show time updates, window checks,
+    pickup marking, and delivery/pairing checks.
     """
 
     pickup = instance["pickup"]
     delivery = instance["delivery"]
     paired_sets = instance["paired_sets"]
 
-    # Fast reverse lookup: node -> request
     pickup_of = {pickup[r]: r for r in pickup}
     delivery_of = {delivery[r]: r for r in delivery}
 
     picked = set()
     time = 0
 
-    # Build mapping from node id -> matrix index for distance/time matrices
-    # Some instances use non-contiguous node IDs (e.g. V = [0,1,2,5,6,7,8])
-    # while T/c are dense matrices indexed by position in V. Create a map
-    # so we can safely index into those matrices.
     node_index = {v: idx for idx, v in enumerate(instance.get("V", []))}
+
+    print("\n--- FEASIBLE() CHECK ---")
+    print("Route:", route)
 
     for k in range(len(route)):
         i = route[k]
 
+        # --- TIME UPDATE ---
+        prev_time = time
         time = _update_time(k, route, time, instance, node_index)
+        print(f"[Node {i}] time updated: {prev_time} → {time}")
 
+        # --- TIME WINDOW CHECK ---
         if not _check_time_window(i, time, instance):
-
-
+            print(f"  Time window violated at node {i} (time={time})")
             return False
+        print(f"  Time window OK [{instance['open'][i]}, {instance['close'][i]}]")
 
-        _mark_pickup(i, picked, pickup_of)
+        # --- PICKUP ---
+        if i in pickup_of:
+            r = pickup_of[i]
+            picked.add(r)
+            print(f"  Pickup r={r} completed → picked={picked}")
 
-        if not _check_delivery(i, picked, delivery_of):
+        # --- DELIVERY ---
+        if i in delivery_of:
+            r = delivery_of[i]
+            # Precedence check
+            if r not in picked:
+                print(f"  Delivery r={r} before pickup → infeasible")
+                return False
+            print(f"  Delivery r={r} OK (pickup already done)")
 
+            # Pairing check
+            for pair in paired_sets:
+                if r in pair:
+                    other = (pair - {r}).pop()
+                    if other not in picked:
+                        print(f"  Pairing violation: r={r} delivered before r={other} pickup")
+                        return False
+                    print(f"  Pairing OK for pair {pair}")
 
-            return False
-
-        if not _check_pairing(i, picked, paired_sets, delivery_of):
-      
-
-            return False
-    
- 
-
+    print("FEASIBLE: All checks passed.")
     return True
-
 
 
 

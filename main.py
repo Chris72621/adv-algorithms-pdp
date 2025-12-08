@@ -76,111 +76,50 @@ def route_to_dictionary(route, instance):
 # MAIN SCRIPT
 def main():
 
-    # Load all test instances
+    # ------------------------------
+    # Load the instance
+    # ------------------------------
     instance_basic = get_instance()
-    # instance_tw = get_instance_tight_tw()
-    # instance_pair = get_instance_with_pairing()
-    # instance_pair_hard = get_instance_pairing_hard()
-    # instance_multi_same_delivery = get_instance_multi_same_delivery()
 
-    # # New instances
-    # instance_large = get_instance_large()
-    # instance_complex = get_instance_complex_tw_pairing()
-    # instance_infeasible = get_instance_infeasible()
+    # ------------------------------
+    # SLIDE 1: Algorithm Inputs
+    # ------------------------------
+    print("\n=== INPUT INSTANCE ===")
+    print("Start depot:", instance_basic["s"])
+    print("End depot:", instance_basic["e"])
 
-    # ---------------------------------------------------------------------
-    # BASIC INSTANCE
-    # ---------------------------------------------------------------------
+    print("Requests (R):", instance_basic["R"])
+    print("Pickup nodes:", instance_basic["pickup"])
+    print("Delivery nodes:", instance_basic["delivery"])
+
+    print("Node set V:", instance_basic["V"])
+
+    print("Time windows:", {
+        i: (instance_basic["open"][i], instance_basic["close"][i])
+        for i in instance_basic["V"]
+    })
+
+    print("Paired sets:", instance_basic["paired_sets"])
+
+
+    # ------------------------------
+    # Call solver
+    # ------------------------------
     start = time.time()
     greedy, final = PDP_GREEDY_INSERT_2OPT(instance_basic)
     end = time.time()
-    print("\n===== BASIC INSTANCE =====")
+
+    # ------------------------------
+    # SLIDE 5: Final Output
+    # ------------------------------
+    print("\n=== FINAL OUTPUT ===")
     print(f"Runtime: {end - start:.6f} seconds")
-    print("Route after greedy construction:", greedy)
-    print("Raw Route (after 2-opt):", final)
-    print("Order:", route_to_dictionary(final, instance_basic))
 
-    # # ---------------------------------------------------------------------
-    # # TIGHT TIME WINDOW INSTANCE
-    # # ---------------------------------------------------------------------
-    # start = time.time()
-    # greedy, final = PDP_GREEDY_INSERT_2OPT(instance_tw)
-    # end = time.time()
-    # print("\n===== TIGHT TIME WINDOW INSTANCE =====")
-    # print(f"Runtime: {end - start:.6f} seconds")
-    # print("Route after greedy construction:", greedy)
-    # print("Raw Route (after 2-opt):", final)
-    # print("Order:", route_to_dictionary(final, instance_tw))
+    print("Route after greedy (before 2-opt):", greedy)
+    print("Route after 2-opt:", final)
 
-    # # ---------------------------------------------------------------------
-    # # PAIRING INSTANCE
-    # # ---------------------------------------------------------------------
-    # start = time.time()
-    # greedy, final = PDP_GREEDY_INSERT_2OPT(instance_pair)
-    # end = time.time()
-    # print("\n===== PAIRING INSTANCE =====")
-    # print(f"Runtime: {end - start:.6f} seconds")
-    # print("Route after greedy construction:", greedy)
-    # print("Raw Route (after 2-opt):", final)
-    # print("Order:", route_to_dictionary(final, instance_pair))
-
-    # # ---------------------------------------------------------------------
-    # # HARD PAIRING + TW INSTANCE
-    # # ---------------------------------------------------------------------
-    # start = time.time()
-    # greedy, final = PDP_GREEDY_INSERT_2OPT(instance_pair_hard)
-    # end = time.time()
-    # print("\n===== HARD PAIRING + TW INSTANCE =====")
-    # print(f"Runtime: {end - start:.6f} seconds")
-    # print("Route after greedy construction:", greedy)
-    # print("Raw Route (after 2-opt):", final)
-    # print("Order:", route_to_dictionary(final, instance_pair_hard))
-
-    # # ---------------------------------------------------------------------
-    # # MULTIPLE REQUESTS SAME DELIVERY NODE - FAIL
-    # # ---------------------------------------------------------------------
-    # start = time.time()
-    # greedy, final = PDP_GREEDY_INSERT_2OPT(instance_multi_same_delivery)
-    # end = time.time()
-    # print("\n===== MULTIPLE REQUESTS SAME DELIVERY NODE - FAIL LOOK AT OUTPUT =====")
-    # print(f"Runtime: {end - start:.6f} seconds")
-    # print("Route after greedy construction:", greedy)
-    # print("Raw Route (after 2-opt):", final)
-    # print("Order:", route_to_dictionary(final, instance_multi_same_delivery))
-
-    # # ---------------------------------------------------------------------
-    # # LARGE INSTANCE (performance stress test)
-    # # ---------------------------------------------------------------------
-    # start = time.time()
-    # greedy, final = PDP_GREEDY_INSERT_2OPT(instance_large)
-    # end = time.time()
-    # print("\n===== LARGE COMPLEX INSTANCE (10 Requests) =====")
-    # print(f"Runtime: {end - start:.6f} seconds")
-    # print("Route after greedy construction:", greedy)
-    # print("Raw Route (after 2-opt):", final)
-    # print("Order:", route_to_dictionary(final, instance_large))
-
-    # # ---------------------------------------------------------------------
-    # # COMPLEX TW + PAIRING INSTANCE
-    # # ---------------------------------------------------------------------
-    # start = time.time()
-    # greedy, final = PDP_GREEDY_INSERT_2OPT(instance_complex)
-    # end = time.time()
-    # print("\n===== COMPLEX TIME WINDOWS + PAIRING INSTANCE =====")
-    # print(f"Runtime: {end - start:.6f} seconds")
-    # print("Route after greedy construction:", greedy)
-    # print("Raw Route (after 2-opt):", final)
-    # print("Order:", route_to_dictionary(final, instance_complex))
-
-    # # ---------------------------------------------------------------------
-    # # INFEASIBLE INSTANCE
-    # # ---------------------------------------------------------------------
-    # start = time.time()
-    # result = PDP_GREEDY_INSERT_2OPT(instance_infeasible)
-    # end = time.time()
-    # print("\n===== INFEASIBLE INSTANCE =====")
-    # print(f"Runtime: {end - start:.6f} seconds")
-    # print("Result:", result)
+    print("Order (pickup→delivery pairs):")
+    print(route_to_dictionary(final, instance_basic))
 
 if __name__ == "__main__":
     main()
