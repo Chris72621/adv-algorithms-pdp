@@ -64,15 +64,23 @@ def feasible(route, instance):
         time = _update_time(k, route, time, instance, node_index)
 
         if not _check_time_window(i, time, instance):
+
+
             return False
 
         _mark_pickup(i, picked, pickup_of)
 
         if not _check_delivery(i, picked, delivery_of):
+
+
             return False
 
         if not _check_pairing(i, picked, paired_sets, delivery_of):
+      
+
             return False
+    
+ 
 
     return True
 

@@ -49,20 +49,28 @@ def PDP_GREEDY_INSERT_2OPT(instance):
 # -------------------------------------------------------------
 
 def _initialize_route(instance):
+
     s = instance["s"]
     e = instance["e"]
     R = instance["R"]
 
-    # If an end depot is required (e is not None)
+    # If an end depot is required
     if e is not None:
         route = [s, e]
     else:
         route = [s]
 
-    # Requests not yet inserted into the route
+    # Requests not yet inserted
     unserved_requests = set(R)
 
+    # -------- TRACE OUTPUT --------
+    print("\n=== TRACE: Initialization ===")
+    print("Initial route:", route)
+    print("Unserved requests:", unserved_requests)
+    # ------------------------------
+
     return route, unserved_requests
+
 
 
 # =====================================================================
@@ -109,6 +117,8 @@ def _initialize_route(instance):
 
 def _construction_phase(route, unserved_requests, instance):
 
+    print("\n=== TRACE: Starting Greedy Construction Phase ===")
+
     pickup = instance["pickup"]
     delivery = instance["delivery"]
 
@@ -119,6 +129,11 @@ def _construction_phase(route, unserved_requests, instance):
 
     # Continue until all pickups inserted and all deliveries placed
     while len(remaining_pickups) > 0 or len(pending_deliveries) > 0:
+
+        print("\n--- Greedy Iteration ---")
+        print("Current route:", route)
+        print("Unserved requests:", remaining_pickups | pending_deliveries)
+
 
         best_route_global = None
         best_delta_global = float("inf")
@@ -237,6 +252,9 @@ def _construction_phase(route, unserved_requests, instance):
 # -------------------------------------------------------------
 
 def _two_opt_phase(route, instance):
+    print("\n=== TRACE: Starting 2-Opt Improvement Phase ===")
+    print("Initial route:", route)
+
 
     c = instance["c"]
 
@@ -266,5 +284,8 @@ def _two_opt_phase(route, instance):
 
             if improved:
                 break
+    
+    print("\n=== TRACE: 2-Opt Complete ===")
+    print("Final improved route:", route)
 
     return route
